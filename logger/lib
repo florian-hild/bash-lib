@@ -1,0 +1,110 @@
+#!/bin/bash
+
+export LANG=C
+
+declare -r __LOGGER_VERSION__='1.0'
+declare log_no_color=""
+declare log_no_timestamp=""
+declare log_no_loglevel=""
+declare log_no_stacktrace=""
+
+if [ "${0}" == "${BASH_SOURCE[0]}" ] ; then
+  echo "This script must be sourced, not executed." >&2
+  exit 1
+fi
+
+create_stacktrace () {
+  # Loop through array
+  for func in "$@"; do
+    # Build trace appent func before last func
+    local trace="${func:+".$(/bin/echo $func|/usr/bin/awk '{print $2}')"}${trace}"
+  done
+
+  # concatenate string with ScriptName.trace:LineNr
+  __STACK__="at $(/usr/bin/basename $0)$trace:$(/bin/echo ${functions[0]}|/usr/bin/awk '{print $1}')"
+}
+
+log () {
+  local log_message="${2:-"No log message provided!"}"
+
+  # If var log_no_loglevel not set use log level
+  if [[ -z ${log_no_loglevel// } ]]; then
+    local log_level="${1:-"warn"} "
+  else
+    local log_level="log_no_loglevel"
+  fi
+
+  # If var log_no_timestamp not set use timestamp
+  if [[ -z ${log_no_timestamp// } ]]; then
+    local log_timestamp="$(date +'%F %H:%M:%S.%3N') "
+  fi
+
+  case ${log_level// } in
+    trace)
+      # Create Arry with "LineNr FuncName ScriptName"
+      readarray -t functions < <(local frame=0; while caller $frame; do ((frame++)); done)
+      create_stacktrace "${functions[@]}"
+
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 7)[trace]$(tput sgr0) "
+      else
+        log_level="[trace] "
+      fi
+      ;;
+    debug)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 4)[debug]$(tput sgr0) "
+      else
+        log_level="[debug] "
+      fi
+      ;;
+    info)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 2)[info] $(tput sgr0) "
+      else
+        log_level="[info]  "
+      fi
+      ;;
+    warn)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 3)[warn] $(tput sgr0) "
+      else
+        log_level="[warn]  "
+      fi
+      ;;
+    error)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 9)[error]$(tput sgr0) "
+      else
+        log_level="[error] "
+      fi
+      ;;
+    fatal)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 1)[fatal]$(tput sgr0) "
+      else
+        log_level="[fatal] "
+      fi
+      ;;
+    log_no_loglevel)
+      unset log_level
+      ;;
+    *)
+      if [[ -z "${log_no_color// }" ]]; then
+        log_level="$(tput setaf 9)[error]$(tput sgr0) "
+      else
+        log_level="[error] "
+      fi
+      printf "${log_timestamp}${log_level}%s\n" "No log level like \"${1}\""
+      ;;
+  esac
+
+  # Print log message
+  if [[ -z "${log_no_stacktrace// }" ]] || [[ ! -z "${__STACK__// }" ]]; then
+    # Print stacktrace if set
+    printf "${log_timestamp}${log_level}${__STACK__:+"[$__STACK__] "}%s\n" "${log_message}"
+    unset __STACK__
+  else
+    printf "${log_timestamp}${log_level}%s\n" "${log_message}"
+  fi
+}
