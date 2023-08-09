@@ -17,7 +17,7 @@ Available log levels:
 Once you have cloned this repository in your project, you can source this library in your bash script.
 
 ```bash
-source ${BASH_LIB_DIR}/logger/lib
+source ${BASH_LIB_DIR}/logger_json/lib
 ```
 
 ## Options
@@ -32,7 +32,7 @@ To enable the option again, just unset the variable like `unset log_no_color`.
 
 ## Example
 ```bash
-source /usr/local/bin/bash-lib/logger/lib
+source /usr/local/bin/bash-lib/logger_json/lib
 
 log "info" "Start script"
 ...
