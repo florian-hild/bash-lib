@@ -45,45 +45,45 @@ log "info" "End script"
 Example output:
 ```json
 $ ./test.sh
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "trace","stacktrace": "at test.sh.main:16","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "debug","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "info","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "warn","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "error","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.3N","loglevel": "fatal","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.469","loglevel": "trace","stacktrace": "at test.sh.main:16","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.469","loglevel": "debug","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.470","loglevel": "info","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.470","loglevel": "warn","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.471","loglevel": "error","message": "Hello World!" }
+{ "timestamp": "2023-08-09 19:43:46.471","loglevel": "fatal","message": "Hello World!" }
 ```
 
 You can pipe the json output into the `jq` command.
 ```json
 $ ./test.sh |jq
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.530",
   "loglevel": "trace",
   "stacktrace": "at test.sh.main:16",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.530",
   "loglevel": "debug",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.531",
   "loglevel": "info",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.532",
   "loglevel": "warn",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.533",
   "loglevel": "error",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.3N",
+  "timestamp": "2023-08-09 19:45:29.533",
   "loglevel": "fatal",
   "message": "Hello World!"
 }
