@@ -1,30 +1,30 @@
 #!/usr/bin/env bash
 
 export LANG=C
+declare -r __LOGGER_VERSION__='1.1.0'
 
-declare -r __LOGGER_VERSION__='1.0'
 declare log_no_color=""
 declare log_no_timestamp=""
 declare log_no_loglevel=""
 declare log_no_stacktrace=""
 
-if [ "${0}" == "${BASH_SOURCE[0]}" ] ; then
+if [ "${0}" == "${BASH_SOURCE[0]}" ]; then
   echo "This script must be sourced, not executed." >&2
   exit 1
 fi
 
-create_stacktrace () {
+create_stacktrace() {
   # Loop through array
-  for func in "$@"; do
+  for func in "${@}"; do
     # Build trace appent func before last func
-    local trace="${func:+".$(/bin/echo $func|/usr/bin/awk '{print $2}')"}${trace}"
+    local trace="${func:+".$(/bin/echo ${func} | /usr/bin/awk '{print $2}')"}${trace}"
   done
 
   # concatenate string with ScriptName.trace:LineNr
-  __STACK__="at $(/usr/bin/basename $0)$trace:$(/bin/echo ${functions[0]}|/usr/bin/awk '{print $1}')"
+  __STACK__="at $(/usr/bin/basename $0)${trace}:$(/bin/echo ${functions[0]} | /usr/bin/awk '{print $1}')"
 }
 
-log () {
+log() {
   local log_message="${2:-"No log message provided!"}"
 
   # If var log_no_loglevel not set use log level
@@ -36,54 +36,69 @@ log () {
 
   # If var log_no_timestamp not set use timestamp
   if [[ -z ${log_no_timestamp// } ]]; then
-    local log_timestamp="$(date +'%F %H:%M:%S.%3N') "
+    local log_timestamp="$(date +'%Y-%m-%dT%H:%M:%S%z') "
+  fi
+
+  # Fix problem running scriopt in cronjob
+  # error: tput: No value for $TERM and no -T specified
+  # Use colors only if a terminal is available
+  if [[ -z "${TERM// }" ]] || [[ "${TERM// }" == "dumb" ]]; then
+    local log_no_color="True"
   fi
 
   case ${log_level// } in
-    trace)
-      # Create Arry with "LineNr FuncName ScriptName"
-      readarray -t functions < <(local frame=0; while caller $frame; do ((frame++)); done)
-      create_stacktrace "${functions[@]}"
+    trace|TRACE)
+      if [[ -z "${log_no_stacktrace// }" ]]; then
+        # Create Arry with "LineNr FuncName ScriptName"
+        functions=()
+        local frame=0
+        while caller ${frame} > /dev/null 2>&1; do
+          functions+=("$(caller ${frame})")
+          ((frame++))
+        done
+
+        create_stacktrace "${functions[@]}"
+      fi
 
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 7)[trace]$(tput sgr0) "
+        log_level="$(tput setaf 7)TRACE$(tput sgr0) "
       else
-        log_level="[trace] "
+        log_level="TRACE "
       fi
       ;;
-    debug)
+    debug|DEBUG)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 4)[debug]$(tput sgr0) "
+        log_level="$(tput setaf 4)DEBUG$(tput sgr0) "
       else
-        log_level="[debug] "
+        log_level="DEBUG "
       fi
       ;;
-    info)
+    info|INFO)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 2)[info] $(tput sgr0) "
+        log_level="$(tput setaf 2)INFO$(tput sgr0)  "
       else
-        log_level="[info]  "
+        log_level="INFO  "
       fi
       ;;
-    warn)
+    warn|WARN|warning|WARNING)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 3)[warn] $(tput sgr0) "
+        log_level="$(tput setaf 3)WARN$(tput sgr0)  "
       else
-        log_level="[warn]  "
+        log_level="WARN  "
       fi
       ;;
-    error)
+    error|ERROR)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 9)[error]$(tput sgr0) "
+        log_level="$(tput setaf 9)ERROR$(tput sgr0) "
       else
-        log_level="[error] "
+        log_level="ERROR "
       fi
       ;;
-    fatal)
+    fatal|FATAL)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 1)[fatal]$(tput sgr0) "
+        log_level="$(tput setaf 1)FATAL$(tput sgr0) "
       else
-        log_level="[fatal] "
+        log_level="FATAL "
       fi
       ;;
     log_no_loglevel)
@@ -91,11 +106,12 @@ log () {
       ;;
     *)
       if [[ -z "${log_no_color// }" ]]; then
-        log_level="$(tput setaf 9)[error]$(tput sgr0) "
+        log_level="$(tput setaf 9)ERROR$(tput sgr0) "
       else
-        log_level="[error] "
+        log_level="ERROR "
       fi
       printf "${log_timestamp}${log_level}%s\n" "No log level like \"${1}\""
+      return 1
       ;;
   esac
 

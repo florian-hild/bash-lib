@@ -1,61 +1,73 @@
-# Bash library: logger/lib
----
-This bash library provides the bash function `log` where you can use to write structuralized log messages to stdout.
+# Bash Library: logger/lib
 
-Features:
-  - Colorized log level
-  - Stack trace with line number and bash function
+This Bash library provides the `log` function for structured logging to `stdout`.
 
-Available log levels:
-  - trace
-  - debug
-  - info
-  - warn
-  - error
-  - fatal
+## Features
+- Colorized log levels
+- Stack trace with line numbers and function names
+- Customizable logging options
+
+## Available Log Levels
+- `trace`
+- `debug`
+- `info`
+- `warn`
+- `error`
+- `fatal`
 
 ## Usage
-Once you have cloned this repository in your project, you can source this library in your bash script.
+Once you have cloned this repository into your project, source the library in your Bash script:
 
 ```bash
-source ${BASH_LIB_DIR}/logger/lib
+source "${BASH_LIB_DIR}/logger/lib"
 ```
 
 ## Options
-To disable an option, you can set one of the following variables somewhere in your script:
+You can disable specific logging features by setting one of the following variables in your script:
+
 ```bash
-log_no_color="true"
-log_no_timestamp="true"
-log_no_loglevel="true"
-log_no_stacktrace="true"
+log_no_color="true"      # Disable colored log levels
+log_no_timestamp="true"  # Remove timestamps from log messages
+log_no_loglevel="true"   # Hide log levels
+log_no_stacktrace="true" # Disable stack trace output
 ```
 
-To enable the option again, just unset the variable like `unset log_no_color`.
+To re-enable an option, unset the corresponding variable:
+
+```bash
+unset log_no_color
+```
 
 ## Example
 ```bash
 source /usr/local/bin/bash-lib/logger/lib
 
-log "info" "Start script"
+log "info" "Starting script..."
 ...
-log "error" "Something went wrong here!"
+log "error" "An error occurred!"
 log "debug" "Return code: ${rc}"
 ...
-log "info" "End script"
+log "info" "Script execution completed."
 ```
 
-Example output:
+### Example Output
 ```log
 $ ./test.sh
-2023-08-09 19:49:27.325 [trace] [at test.sh.main:16] Hello World!
-2023-08-09 19:49:27.326 [debug] Hello World!
-2023-08-09 19:49:27.326 [info]  Hello World!
-2023-08-09 19:49:27.327 [warn]  Hello World!
-2023-08-09 19:49:27.327 [error] Hello World!
-2023-08-09 19:49:27.328 [fatal] Hello World!
+2025-03-14T17:28:42+0100 TRACE [at test.sh.main.print_logs:17] Hello World!
+2025-03-14T17:28:42+0100 DEBUG Hello World!
+2025-03-14T17:28:42+0100 INFO  Hello World!
+2025-03-14T17:28:42+0100 WARN  Hello World!
+2025-03-14T17:28:42+0100 ERROR Hello World!
+2025-03-14T17:28:42+0100 FATAL Hello World!
 ```
 
-If you like to use json output, you can just change `logger/lib` to `logger_json/lib`.
+## JSON Output
+To enable JSON-formatted logs, replace `logger/lib` with `logger_json/lib`:
+
+```bash
+source "${BASH_LIB_DIR}/logger_json/lib"
+```
 
 ## License
-See repository license file.
+Refer to the repository's license file for details.
+

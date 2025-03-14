@@ -1,93 +1,106 @@
 # Bash library: logger_json/lib
 ---
-This bash library provides the bash function `log` where you can use to write structuralized log messages to stdout in json format.
+This Bash library provides the `log` function for structured logging to `stdout` in json.
 
-Features:
-  - Stack trace with line number and bash function
+## Features
+- Stack trace with line numbers and function names
+- Customizable logging options
 
-Available log levels:
-  - trace
-  - debug
-  - info
-  - warn
-  - error
-  - fatal
+## Available Log Levels
+- `trace`
+- `debug`
+- `info`
+- `warn`
+- `error`
+- `fatal`
 
 ## Usage
-Once you have cloned this repository in your project, you can source this library in your bash script.
+Once you have cloned this repository into your project, source the library in your Bash script:
 
 ```bash
 source ${BASH_LIB_DIR}/logger_json/lib
 ```
 
 ## Options
-To disable an option, you can set one of the following variables somewhere in your script:
+You can disable specific logging features by setting one of the following variables in your script:
+
 ```bash
-log_no_timestamp="true"
-log_no_loglevel="true"
-log_no_stacktrace="true"
+log_no_timestamp="true"  # Remove timestamps from log messages
+log_no_loglevel="true"   # Hide log levels
+log_no_stacktrace="true" # Disable stack trace output
 ```
 
-To enable the option again, just unset the variable like `unset log_no_color`.
+To re-enable an option, unset the corresponding variable:
+
+```bash
+unset log_no_stacktrace
+```
 
 ## Example
 ```bash
 source /usr/local/bin/bash-lib/logger_json/lib
 
-log "info" "Start script"
+log "info" "Starting script..."
 ...
-log "error" "Something went wrong here!"
+log "error" "An error occurred!"
 log "debug" "Return code: ${rc}"
 ...
-log "info" "End script"
+log "info" "Script execution completed."
 ```
 
-Example output:
+### Example Output
 ```json
 $ ./test.sh
-{ "timestamp": "2023-08-09 19:43:46.469","loglevel": "trace","stacktrace": "at test.sh.main:16","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.469","loglevel": "debug","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.470","loglevel": "info","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.470","loglevel": "warn","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.471","loglevel": "error","message": "Hello World!" }
-{ "timestamp": "2023-08-09 19:43:46.471","loglevel": "fatal","message": "Hello World!" }
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"TRACE","stacktrace":"at test.sh.main.print_logs:17","message":"Hello World!"}
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"DEBUG","message":"Hello World!"}
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"INFO","message":"Hello World!"}
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"WARN","message":"Hello World!"}
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"ERROR","message":"Hello World!"}
+{"timestamp":"2025-03-14T17:34:02+0100","loglevel":"FATAL","message":"Hello World!"}
 ```
 
-You can pipe the json output into the `jq` command.
+You can pipe the JSON output into the `jq` command for easier readability and processing.
 ```json
-$ ./test.sh |jq
+$ ./test.sh | jq
 {
-  "timestamp": "2023-08-09 19:45:29.530",
-  "loglevel": "trace",
-  "stacktrace": "at test.sh.main:16",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "TRACE",
+  "stacktrace": "at test.sh.main.print_logs:17",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.530",
-  "loglevel": "debug",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "DEBUG",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.531",
-  "loglevel": "info",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "INFO",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.532",
-  "loglevel": "warn",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "WARN",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.533",
-  "loglevel": "error",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "ERROR",
   "message": "Hello World!"
 }
 {
-  "timestamp": "2023-08-09 19:45:29.533",
-  "loglevel": "fatal",
+  "timestamp": "2025-03-14T17:34:41+0100",
+  "loglevel": "FATAL",
   "message": "Hello World!"
 }
+```
+
+## Standard Output
+To enable Standard-formatted logs, replace `logger_json/lib` with `logger/lib`:
+
+```bash
+source "${BASH_LIB_DIR}/logger/lib"
 ```
 
 ## License
-See repository license file.
+Refer to the repository's license file for details.
