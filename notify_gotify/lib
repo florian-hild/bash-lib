@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+export LANG=C
+declare -r __NOTIFY_GOTIFY_VERSION__='1.0.0'
+
+declare gotify_server_url="https://gotify.lan.florian-hild.de"
+
+if [ "${0}" == "${BASH_SOURCE[0]}" ]; then
+  echo "This script must be sourced, not executed." >&2
+  exit 1
+fi
+
+function import() {
+    local bash_lib_name="${1}"
+    local bash_lib_path="${2:-"/usr/local/bin"}"
+
+    if [[ -r "${bash_lib_path}/${bash_lib_name}" ]]; then
+        source "${bash_lib_path}/${bash_lib_name}/lib"
+    else
+        echo "ERROR File not found: \"${bash_lib_path}/${bash_lib_name}\"."
+        echo "ERROR Could not load \"${bash_lib_name}\"."
+        return 1
+    fi
+}
+
+send_alert() {
+    local priority="${1:-"info"}"
+    local title="${2:-"No title provided!"}"
+    local message="${3:-"No message provided!"}"
+    local gotify_key="${4}"
+
+    if [[ ${#} -lt 4 ]]; then
+        log error "Missing required arguments."
+        log info  "Usage:"
+        log info  "  send_alert <priority> <title> <message> <gotify_key>"
+        log info  "Arguments:"
+        log info  "  priority     Notification level: info, warn, warning, error, critical"
+        log info  "  title        Short title for the Gotify notification"
+        log info  "  message      Detailed message body"
+        log info  "  gotify_key   Gotify application token (required)"
+        return 1
+    fi
+
+    if [[ -z "${gotify_key// }" ]]; then
+        log error "Missing argument: gotify_key"
+        log info  "Usage: send_alert <priority> <title> <message> <gotify_key>"
+        return 1
+    fi
+
+    priority=$(echo "${priority}" | tr '[:upper:]' '[:lower:]')
+
+    case "${priority}" in
+        info|0)
+            priority_number="0"
+            ;;
+        warn|warning|1|2|3)
+            priority_number="3"
+            ;;
+        error|4|5|6|7)
+            priority_number="7"
+            ;;
+        critical|8|9|10)
+            priority_number="10"
+            ;;
+        *)
+            log error "Invalid priority: \"${priority}\""
+            log info  "Supported values: info, warn, warning, error, critical"
+            priority_number="7"
+            message="Invalid priority: \"${priority}\"\n\n${message}"
+            ;;
+    esac
+
+    log info "Sending notification to Gotify server: ${gotify_server_url}"
+    # Convert to actual newlines
+    message=$(printf "%b" "${message}")
+
+    # Escape message and title for JSON manually
+    escaped_message=$(printf '%s' "${message}" | sed 's/\\/\\\\/g; s/"/\\"/g; s/$/\\n/' | tr -d '\n')
+    escaped_title=$(printf '%s' "${title}" | sed 's/\\/\\\\/g; s/"/\\"/g')
+
+    # Build payload
+    payload=$(cat <<EOF
+{
+    "title": "${escaped_title}",
+    "message": "${escaped_message}",
+    "priority": ${priority_number}
+}
+EOF
+    )
+
+    # Save JSON to a variable
+    json_response=$(curl -sS -w "%{http_code}" -X POST "${gotify_server_url}/message?token=${gotify_key}" \
+        -H "Content-Type: application/json" \
+        -d "${payload}" 2>&1)
+    rc=${?}
+
+    # Extract HTTP code (last 3 digits)
+    http_code="${json_response: -3}"
+
+    # Extract JSON response only
+    json_body="${json_response:0:-3}"
+
+    # Check HTTP code
+    if [[ "${rc}" -ne 0 ]] || [[ "${http_code}" -ge 400 ]]; then
+        log error "Gotify request failed with HTTP code ${http_code}"
+        log error "Response body: ${json_body}"
+        return 1
+    fi
+}
